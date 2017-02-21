@@ -14,23 +14,23 @@ Servo myservo;  // create servo object to control a servo
 // Connect to the WiFi
 const char* ssid = "SSID";
 const char* password = "PASSWORD";
-const char* mqtt_server = "MQTT_SERVER";  // Can be name or IP address
+const char* mqtt_server = "MQTT_SERVER";   // Can be name or IP address
  
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-int signal1G = 12; // GPIO12
+int signal1G = 12; // GPIO12               
 int signal1A = 5; // GPIO5
 int signal1R = 4; // GPIO4
 int ledPin3 = 2; // GPIO2
 
-int flash = 0;
+int flash = 0;                            // Initial settings for flashing
 int greenFlash = 0;
 int redFlash = 0;
 int amberFlash = 0;
 
 unsigned long previousMillis = 0;         // will store last time LED was updated
-const long interval = 500;               // interval at which to blink (milliseconds)
+const long interval = 500;                // interval at which to flash LED's (milliseconds)
  
 void callback(char* topic, byte* payload, unsigned int length) {
  Serial.print("Message arrived [");
@@ -40,7 +40,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   char receivedChar = (char)payload[i];
   Serial.print(receivedChar);
 
-  if (strcmp (topic,"signal01") == 0) {
+  if (strcmp (topic,"signal01") == 0) {     // When character 'G' is sent to topic 'signal01' sets the Green LED only. Flash off.
     if (receivedChar == 'G'){
      digitalWrite(signal1G, LOW);
      digitalWrite(signal1A, HIGH);
@@ -85,18 +85,18 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
   }
 
-  if (strcmp (topic,"points01") == 0) {
+  if (strcmp (topic,"points01") == 0) {          // When 0 or 1 is sent to the topic 'points01' it will set the servo.
     if (receivedChar == '0'){
-     myservo.attach(14);
+     myservo.attach(14);                         // Attach to servo.. Delay.. Set servo.. Delay.. Detach. Save power and stop servo hum. Allows for multiple servo's from one board.
      delay(20);
-     myservo.write(68);
+     myservo.write(68);                          // This is the low value for my servo. Adjust to suit your servo.
      delay(100);
      myservo.detach();
     }
-    if (receivedChar == '1'){
+    if (receivedChar == '1'){                    
      myservo.attach(14);
      delay(20);
-     myservo.write(85);
+     myservo.write(85);                           // This is the high value for my servo. Adjust to suit your servo.
      delay(100);
      myservo.detach();
      
@@ -116,7 +116,7 @@ void reconnect() {
     if (client.connect("ESP8266 Client 2")) {
       Serial.println("connected");
       // ... and subscribe to topic
-      client.subscribe("points01");
+      client.subscribe("points01");                // Topics that are subscribed to. Add more or change as required.
       client.subscribe("signal01");
   
     } else {
@@ -133,7 +133,7 @@ void setup()
 {
  Serial.begin(115200);
  
- client.setServer(mqtt_server, 1883);
+ client.setServer(mqtt_server, 1883);            // Default port of MQTT server is 1883
  client.setCallback(callback);
  
  pinMode(signal1G, OUTPUT);
@@ -151,7 +151,7 @@ void loop()
     reconnect();
   }
 
-  unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();                    // All this code is to allow LED's to flash at a set rate and allow code to continue. If delays are too long ESP with freeze WIFI functions.
 
   if (currentMillis - previousMillis >= interval) {      
 
